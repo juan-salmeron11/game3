@@ -11,6 +11,8 @@ Also uses the pal_bright() function to fade in the palette.
 
 extern const byte city_back1_pal[16];
 extern const byte city_back1_rle[];
+extern const byte city_back2_pal[16];
+extern const byte city_back2_rle[];
 
 
 // define a 2x2 metasprite
@@ -73,7 +75,7 @@ sbyte actor_dy[NUM_ACTORS];
 //#link "chr_game3.s"
 
 //#link "city_back1.s"
-
+//#link "city_back2.s"
 void fade_in() {
   byte vb;
   for (vb=0; vb<=4; vb++) {
@@ -145,11 +147,14 @@ void scroll_background() {
       
       if (pad&PAD_LEFT && actor_x[i]>5) {
         actor_dx[i]=-1;		//Moves player to the left until hits screen border
-        dx=-1;
+       // dx=-1;
+       // x+=1;
       }
       else if (pad&PAD_RIGHT && actor_x[i]<235) {
-        actor_dx[i]=2;	//Moves player to the right until hits screen border
-        dx =3;
+        actor_dx[i]=2
+
+;	//Moves player to the right until hits screen border
+        //dx =3;
         x+=2;
       }
       else{
@@ -158,7 +163,7 @@ void scroll_background() {
             }
       if (pad&PAD_UP && actor_y[i] > 150)
         actor_y[i] -=1 ;	//Moves player to the up until hits sidewalk
-      else if (pad&PAD_DOWN&& actor_y[i] <200) 
+      else if (pad&PAD_DOWN&& actor_y[i] <210) 
         actor_y[i] +=1 ;	//Moves player to the down until hits screen border
         
       
@@ -177,31 +182,35 @@ void scroll_background() {
     // wait for next frame
     ppu_wait_nmi();
     // update y variable
-   // x += dx;
-    x +=2;
+    //x += dx;
+   x +=1;
     scroll(x, y);
   }
 }
 
 
-void show_title_screen(const byte* pal, const byte* rle) {
+void show_title_screen(const byte* pal, const byte* rle,const byte* rle2) {
   // disable rendering
   ppu_off();
   // set palette, virtual bright to 0 (total black)
   pal_bg(pal);
+  
   // unpack nametable into the VRAM
-  vram_adr(0x2000);
-  vram_unrle(rle);
   vram_adr(0x2400);
   vram_unrle(rle);
+ vram_adr(0x2c00);
+  vram_unrle(rle2);
   // enable rendering
   ppu_on_all();
 }
+  
+  
+
 
 void main(void)
 {
   setup_graphics();
-  show_title_screen(city_back1_pal, city_back1_rle);
+  show_title_screen(city_back1_pal, city_back1_rle,city_back2_rle);
   scroll_background();
 
 }
