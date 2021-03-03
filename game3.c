@@ -119,7 +119,7 @@ void setup_graphics() {
 
 
 // function to scroll window up and down until end
-void scroll_demo() {
+void scroll_background() {
   int x = 0;   // x scroll position
   int y = 0;   // y scroll position
   int dx = 0;  // y scroll direction
@@ -127,68 +127,58 @@ void scroll_demo() {
          char i;	// actor index
   char oam_id;	// sprite ID
   char pad;	// controller flags
-  char pad2;
-      actor_x[0] = 120;
-    actor_y[0] = 191;
-    actor_dx[0] = 0;
-    actor_dy[0] = 0;
+  //Place the player in the middle of the screen  
+  actor_x[0] = 120;
+  actor_y[0] = 191;
+  actor_dx[0] = 0;
+  actor_dy[0] = 0;
+
   // infinite loop
   while (1) {
-  
-    //Place the player in the middle of the screen
-
-  
   
       oam_id = 0;
     
     // set player 0/1 velocity based on controller
     for (i=0; i<1; i++) {
       // poll controller i (0-1)
-      pad2 = pad_trigger(i);
       pad = pad_poll(i);
       
       if (pad&PAD_LEFT && actor_x[i]>5) {
-        actor_dx[i]=-2;		//Moves player to the left until hits screen border
-    // x+=-1;
+        actor_dx[i]=-1;		//Moves player to the left until hits screen border
         dx=-1;
       }
       else if (pad&PAD_RIGHT && actor_x[i]<235) {
         actor_dx[i]=2;	//Moves player to the right until hits screen border
         dx =3;
+        x+=2;
       }
-      else if (pad&PAD_UP && actor_y[i] > 150) {
-        actor_y[i] -=1 ;	//Moves player to the right until hits screen border
-        
-      }
-            else if (pad&PAD_DOWN&& actor_y[i] <200) {
-        actor_y[i] +=1 ;	//Moves player to the right until hits screen border
-        
-      }	else{
+      else{
               actor_dx[i]=0;
               dx =0;
             }
+      if (pad&PAD_UP && actor_y[i] > 150)
+        actor_y[i] -=1 ;	//Moves player to the up until hits sidewalk
+      else if (pad&PAD_DOWN&& actor_y[i] <200) 
+        actor_y[i] +=1 ;	//Moves player to the down until hits screen border
+        
       
       
     
-    }
-      
-      
-      
-      //Drawing Player character
+    }  
+    //Drawing Player character
     for (i=0; i<NUM_ACTORS; i++) {
-      byte runseq = actor_x[0] & 7;
-      if (actor_dx[0] >= 0)
+      byte runseq = actor_x[i] & 7;
+      if (actor_dx[i] >= 0)
         runseq += 8;
       oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
       actor_x[i] += actor_dx[i];
-
-     
     }
     
     // wait for next frame
-    ppu_wait_frame();
+    ppu_wait_nmi();
     // update y variable
-    x += dx;
+   // x += dx;
+    x +=2;
     scroll(x, y);
   }
 }
@@ -211,10 +201,7 @@ void show_title_screen(const byte* pal, const byte* rle) {
 void main(void)
 {
   setup_graphics();
-         
-  
   show_title_screen(city_back1_pal, city_back1_rle);
-   
-   scroll_demo();
+  scroll_background();
 
 }

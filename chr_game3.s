@@ -16,7 +16,7 @@
 .byte $FF,$FF,$FF,$99,$99,$99,$99,$99
 .byte $00,$00,$FF,$FF,$FF,$FF,$FF,$FF
 .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-.byte $AA,$55,$AA,$55,$AA,$55,$AA,$55
+.byte $AA,$55,$AA,$00,$00,$55,$AA,$55
 .byte $AA,$55,$AA,$55,$AA,$55,$AA,$55
 .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 .byte $AA,$55,$AA,$55,$AA,$55,$AA,$55
@@ -49,8 +49,8 @@
 .byte $00,$00,$7C,$FE,$FE,$FE,$7C,$38
 .byte $00,$00,$00,$00,$00,$00,$00,$00
 .byte $00,$66,$FF,$FF,$FF,$7E,$3C,$18
-.byte $18,$3C,$FF,$FF,$7E,$7E,$7E,$7E
-.byte $10,$38,$FE,$7C,$38,$7C,$6C,$00
+.byte $00,$00,$00,$00,$00,$00,$00,$00
+.byte $3C,$7E,$FF,$FF,$FF,$FF,$7E,$3C
 .byte $0F,$1F,$7F,$FF,$FC,$FC,$FC,$78
 .byte $0A,$14,$72,$F8,$F8,$F8,$70,$00
 .byte $00,$00,$FF,$FF,$F6,$F6,$F6,$F6
