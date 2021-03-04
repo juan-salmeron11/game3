@@ -1,66 +1,43 @@
-
-
-/*
-Unpacks a RLE-compressed nametable+attribute table into VRAM.
-Also uses the pal_bright() function to fade in the palette.
-*/
-
 #include "neslib.h"
 #include <string.h>
 
+//Import Music
+//#link "famitone2.s"
+//#link "music_dangerstreets.s"
+extern char danger_streets_music_data[];
 
+
+//Backgrounds/ Name tables
 extern const byte city_back1_pal[16];
 extern const byte city_back1_rle[];
 extern const byte city_back2_pal[16];
 extern const byte city_back2_rle[];
 
 
-// define a 2x2 metasprite
+// define a 2x4 metasprite for the motorcycle
 #define DEF_METASPRITE_2x2(name,code,pal)\
 const unsigned char name[]={\
         0,      0,      (code)+0,   pal, \
         0,      8,      (code)+1,   pal, \
         8,      0,      (code)+2,   pal, \
         8,      8,      (code)+3,   pal, \
+        16,      0,      (code)+4,   pal, \
+        16,      8,      (code)+5,   pal, \
+        24,      0,      (code)+6,   pal, \
+        24,      8,      (code)+7,   pal, \
         128};
 
-// define a 2x2 metasprite, flipped horizontally
-#define DEF_METASPRITE_2x2_FLIP(name,code,pal)\
-const unsigned char name[]={\
-        8,      0,      (code)+0,   (pal)|OAM_FLIP_H, \
-        8,      8,      (code)+1,   (pal)|OAM_FLIP_H, \
-        0,      0,      (code)+2,   (pal)|OAM_FLIP_H, \
-        0,      8,      (code)+3,   (pal)|OAM_FLIP_H, \
-        128};
-//Meta sprite for player 
-DEF_METASPRITE_2x2(playerRStand, 0xd8, 0);
-DEF_METASPRITE_2x2(playerRRun1, 0xc4, 0);
-DEF_METASPRITE_2x2(playerRRun2, 0xc8, 0);
-DEF_METASPRITE_2x2(playerRRun3, 0xc8, 0);
-DEF_METASPRITE_2x2(playerRJump, 0xe8, 0);
-DEF_METASPRITE_2x2(playerRClimb, 0xec, 0);
-DEF_METASPRITE_2x2(playerRSad, 0xf0, 0);
+//Meta Sprites for Driving animation of the Motorcycle
+DEF_METASPRITE_2x2(playerRRun1, 0xcc, 1);
+DEF_METASPRITE_2x2(playerRRun2, 0xec, 1);
 
-DEF_METASPRITE_2x2_FLIP(playerLStand, 0xd8, 0);
-DEF_METASPRITE_2x2_FLIP(playerLRun1, 0xc4, 0);
-DEF_METASPRITE_2x2_FLIP(playerLRun2, 0xc8, 0);
-DEF_METASPRITE_2x2_FLIP(playerLRun3, 0xc8, 0);
-DEF_METASPRITE_2x2_FLIP(playerLJump, 0xe8, 0);
-DEF_METASPRITE_2x2_FLIP(playerLClimb, 0xec, 0);
-DEF_METASPRITE_2x2_FLIP(playerLSad, 0xf0, 0);
-
-DEF_METASPRITE_2x2(personToSave, 0xba, 1);
-
-
-
-
-//Player movement sequence
+//Motorcycle Movement Sequence
 const unsigned char* const playerRunSeq[16] = {
-  playerLRun1, playerLRun2, playerLRun3, 
-  playerLRun1, playerLRun2, playerLRun3, 
-  playerLRun1, playerLRun2,
-  playerRRun1, playerRRun2, playerRRun3, 
-  playerRRun1, playerRRun2, playerRRun3, 
+  playerRRun1, playerRRun2, playerRRun1, 
+  playerRRun1, playerRRun2, playerRRun1, 
+  playerRRun1, playerRRun2,
+  playerRRun1, playerRRun2, playerRRun1, 
+  playerRRun1, playerRRun2, playerRRun1, 
   playerRRun1, playerRRun2,
 };
 
@@ -70,12 +47,11 @@ byte actor_y[NUM_ACTORS];
 sbyte actor_dx[NUM_ACTORS];
 sbyte actor_dy[NUM_ACTORS];
 
-
 // link the pattern table into CHR ROM
 //#link "chr_game3.s"
-
 //#link "city_back1.s"
 //#link "city_back2.s"
+
 void fade_in() {
   byte vb;
   for (vb=0; vb<=4; vb++) {
@@ -104,7 +80,7 @@ const char PALETTE[32] = {
   0x06,0x2A,0x26,0x00,	// background palette 3
 
   0x07,0x10,0x16,0x00,	// sprite palette 0
-  0x1B,0x16,0x07,0x00,	// sprite palette 1
+  0x0f,0x20,0x16,0x00,	// sprite palette 1 Motorcycle uses this palette!!!!
   0x0D,0x28,0x3A,0x00,	// sprite palette 2
   0x16,0x27,0x2F	// sprite palette 3
 };
@@ -129,12 +105,13 @@ void scroll_background() {
          char i;	// actor index
   char oam_id;	// sprite ID
   char pad;	// controller flags
-  //Place the player in the middle of the screen  
-  actor_x[0] = 120;
+  
+  //Place the player in the left fourth of the screen  
+  actor_x[0] = 60;
   actor_y[0] = 191;
   actor_dx[0] = 0;
-  actor_dy[0] = 0;
-
+  actor_dy[0] = 0; 
+  
   // infinite loop
   while (1) {
   
@@ -145,18 +122,15 @@ void scroll_background() {
       // poll controller i (0-1)
       pad = pad_poll(i);
       
-      if (pad&PAD_LEFT && actor_x[i]>5) {
-        actor_dx[i]=-1;		//Moves player to the left until hits screen border
-       // dx=-1;
-       // x+=1;
+      if (pad&PAD_LEFT && actor_x[i]>10) {
+        x-=1;			//Slows down the Background Scrolling
+        actor_dx[i] = -1;
       }
-      else if (pad&PAD_RIGHT && actor_x[i]<235) {
-        actor_dx[i]=2
-
-;	//Moves player to the right until hits screen border
-        //dx =3;
-        x+=2;
+      else if (pad&PAD_RIGHT && actor_x[i]<220) {
+        x+=2;           	//Speeds up background scrolling
+        actor_dx[i] = 1;	//Speed up bike until hits the screen
       }
+      
       else{
               actor_dx[i]=0;
               dx =0;
@@ -172,7 +146,8 @@ void scroll_background() {
     }  
     //Drawing Player character
     for (i=0; i<NUM_ACTORS; i++) {
-      byte runseq = actor_x[i] & 7;
+      //byte runseq = actor_x[i] & 7;
+	byte runseq = x & 7;
       if (actor_dx[i] >= 0)
         runseq += 8;
       oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
@@ -183,7 +158,7 @@ void scroll_background() {
     ppu_wait_nmi();
     // update y variable
     //x += dx;
-   x +=1;
+    x +=2;
     scroll(x, y);
   }
 }
@@ -204,11 +179,17 @@ void show_title_screen(const byte* pal, const byte* rle,const byte* rle2) {
   ppu_on_all();
 }
   
-  
-
+//Function for music  
+void fastcall famitone_update(void);
 
 void main(void)
 {
+  famitone_init(danger_streets_music_data);
+  // set music callback function for NMI
+  nmi_set_callback(famitone_update);
+  // play music
+  //music_play(0); //Uncomment this to play Music
+  
   setup_graphics();
   show_title_screen(city_back1_pal, city_back1_rle,city_back2_rle);
   scroll_background();
