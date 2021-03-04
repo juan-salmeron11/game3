@@ -1,6 +1,6 @@
 #include "neslib.h"
 #include <string.h>
-
+#define NES_MIRRORING 1
 //Import Music
 //#link "famitone2.s"
 //#link "music_dangerstreets.s"
@@ -171,9 +171,9 @@ void show_title_screen(const byte* pal, const byte* rle,const byte* rle2) {
   pal_bg(pal);
   
   // unpack nametable into the VRAM
-  vram_adr(0x2400);
+  vram_adr(0x2000);
   vram_unrle(rle);
- vram_adr(0x2c00);
+ vram_adr(0x2400);
   vram_unrle(rle2);
   // enable rendering
   ppu_on_all();
