@@ -156,8 +156,10 @@ void setup_graphics() {
 }
 
 int fuel = 1000;
-int progress = 0;
+int progress,p = 0;
 int time = 1000;
+int hit = 0;
+bool invis =false;
 
 // function to scroll window up and down until end
 void scroll_background() {
@@ -226,15 +228,14 @@ void scroll_background() {
     
     }  
     //Drawing Player character
-    for (i=0; i<NUM_ACTORS; i++) {
-      //byte runseq = actor_x[i] & 7;
+     if(invis == false){
+       for (i=0; i<NUM_ACTORS; i++) {
 	byte runseq = x & 7;
       if (actor_dx[i] >= 0)
         runseq += 8;
       oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
-      //actor_x[i] += actor_dx[i];
     }
-    
+      }
     //Drawing Gas can IDEA: spawn gas can in a random y coordinate within the street range
     for (i=0; i<NUM_ACTORS; i++) {
 
@@ -282,6 +283,7 @@ void scroll_background() {
         lives--;
         van_x[i] = 230;
       	van_y[i] = (rand() % (208 + 1 - 150)) + 150;
+      hit = 50;
       }
     }
     
@@ -304,8 +306,14 @@ void scroll_background() {
     oam_id = oam_spr(10+(i*8), 10, s, 0, oam_id);
       
     }
+    //temp timer
     oam_id = oam_spr(232, 10, 48+(time/100%10), 3, oam_id);
     oam_id = oam_spr(240, 10, 48+(time/10%10), 3, oam_id);
+    
+    if(progress %300 ==0) p+=5;
+    if(p == 60)break;
+    oam_id = oam_spr(100+ p, 10, 26, 2, oam_id);// change this sprite to an icon
+    oam_id = oam_spr(160, 10, 25, 1, oam_id);
     
     x +=2;
     scroll(x, y);
@@ -313,6 +321,17 @@ void scroll_background() {
     time -=1;
     progress +=1;
     
+    if (oam_id!=0) oam_hide_rest(oam_id);
+    
+    if(hit > 0){ 
+      hit--;
+      if(invis == false)
+        invis = true;
+        else invis = false;
+    }
+    
+    if(hit == 0)invis = false;
+
     if (oam_id!=0) oam_hide_rest(oam_id);
     
     //End game when lives run out PLACE HOLDER
