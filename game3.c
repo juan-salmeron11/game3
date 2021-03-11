@@ -232,7 +232,7 @@ void scroll_background() {
       if (actor_dx[i] >= 0)
         runseq += 8;
       oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
-      actor_x[i] += actor_dx[i];
+      //actor_x[i] += actor_dx[i];
     }
     
     //Drawing Gas can IDEA: spawn gas can in a random y coordinate within the street range
@@ -280,8 +280,15 @@ void scroll_background() {
     if(van_x[i] > (actor_x[0]) && van_x[i] < (actor_x[0] + 32) && van_y[i] < (actor_y[0] + 16) && van_y[i] > (actor_y[0])) {
       	delay(20);
         lives--;
-        actor_x[0] = 10;	//Change these later
-      	actor_y[0] = 190;	//Change these later
+        van_x[i] = 230;
+      	van_y[i] = (rand() % (208 + 1 - 150)) + 150;
+      }
+    }
+    
+    //Van Spawning pattern
+    for (i=0; i<NUM_ENEMIES; i++){
+    if((van_x[i]) == 250) {
+	van_y[i]= (rand() % (208 + 1 - 150)) + 150;
       }
     }
     
@@ -297,8 +304,8 @@ void scroll_background() {
     oam_id = oam_spr(10+(i*8), 10, s, 0, oam_id);
       
     }
-    oam_id = oam_spr(232, 10, 48+(time/100%10), 2, oam_id);
-    oam_id = oam_spr(240, 10, 48+(time/10%10), 2, oam_id);
+    oam_id = oam_spr(232, 10, 48+(time/100%10), 3, oam_id);
+    oam_id = oam_spr(240, 10, 48+(time/10%10), 3, oam_id);
     
     x +=2;
     scroll(x, y);
@@ -338,7 +345,7 @@ void main(void)
   // set music callback function for NMI
   nmi_set_callback(famitone_update);
   // play music
-  //music_play(0); //Uncomment this to play Music
+  music_play(0); //Uncomment this to play Music
   
   setup_graphics();
   show_title_screen(city_back1_pal, city_back1_rle,city_back2_rle);
