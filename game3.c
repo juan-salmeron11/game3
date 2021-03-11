@@ -53,6 +53,15 @@ const unsigned char name[]={\
         8,      8,      (code)+3,   pal, \
         128};
 
+//Meta Sprite for Gas Can
+#define DEF_METASPRITE_CONE(name, code, pal)\
+const unsigned char name[]={\
+        0,      0,      (code)+0,   pal, \
+        0,      8,      (code)+1,   pal, \
+        8,      0,      (code)+2,   pal, \
+        8,      8,      (code)+3,   pal, \
+        128};
+
 //Meta Sprites for Driving animation of the Motorcycle
 DEF_METASPRITE_2x2(playerRRun1, 0xcc, 1);
 DEF_METASPRITE_2x2(playerRRun2, 0xec, 1);
@@ -63,6 +72,9 @@ DEF_METASPRITE_VAN(vanMove2, 0xe4, 2);
 
 //Meta Sprite for Gas Can
 DEF_METASPRITE_GAS(gasCan, 0xd4 , 1);
+
+//Meta Sprite for Cone
+DEF_METASPRITE_CONE(cone, 0xdc , 1);
 
 //Motorcycle Movement Sequence
 const unsigned char* const playerRunSeq[16] = {
@@ -106,6 +118,12 @@ byte van_y[NUM_ENEMIES];
 sbyte van_dx[NUM_ENEMIES];
 sbyte van_dy[NUM_ENEMIES];
 
+
+//Cone coordinates and movement variables
+byte cone_x[NUM_ENEMIES];
+byte cone_y[NUM_ENEMIES];
+sbyte cone_dx[NUM_ENEMIES];
+sbyte cone_dy[NUM_ENEMIES];
 
 // link the pattern table into CHR ROM
 //#link "chr_game3.s"
@@ -188,10 +206,15 @@ void scroll_background() {
   //Van vehicle placement
   for (i = 0; i < NUM_ENEMIES; i++)
   {
-  van_x[i] = (rand() % (254 + 1 - 100)) + 200;
-  van_y[i] = (rand() % (208 + 1 - 150)) + 150;	//Vans spawn randomly within street range
+  van_x[i] = (rand() % (254 + 1 - 150)) + 150;
+  van_y[i] = (rand() % (210 + 1 - 150)) + 150;	//Vans spawn randomly within street range
   van_dx[i] = 0;
   van_dy[i] = 0;
+    
+  cone_x[i] = (rand() % (254 + 1 - 200)) + 200;
+  cone_y[i] = (rand() % (210 + 1 - 150)) + 150;
+  cone_dx[i] = 0;
+  cone_dy[i] = 0;
   }
   
   
@@ -223,9 +246,7 @@ void scroll_background() {
       else if (pad&PAD_DOWN&& actor_y[i] <210) 
         actor_y[i] +=1 ;	//Moves player to the down until hits screen border
         
-      
-      
-    
+                
     }  
     //Drawing Player character
      if(invis == false){
@@ -257,17 +278,35 @@ void scroll_background() {
       if (x != 0)
         runseq += 8;
       oam_id = oam_meta_spr(van_x[i], van_y[i], oam_id, VanRunSeq[runseq] );
-
+      oam_id = oam_meta_spr(cone_x[i], cone_y[i], oam_id, cone );
+      
       if (actor_dx[0] == 0){		
       van_x[i] += van_dx[i] - 1;
+      cone_x[i] += cone_dx[i] - 2;
       }
-      else if (actor_dx[0] > 0)		
+      else if (actor_dx[0] > 0){		
       van_x[i] += van_dx[i] - 3;
+      cone_x[i] += cone_dx[i] - 4;  
+      }
       else
-      van_x[i] += van_dx[i] + 2;	
+      {
+      van_x[i] += van_dx[i] + 1;	
+      cone_x[i] += cone_dx[i] - 1;
+      }	
             
     }
     
+    
+    //VAN Collision detection 
+    for (i=0; i<NUM_ENEMIES; i++){
+    if(van_x[i] > (actor_x[0]) && van_x[i] < (actor_x[0] + 32) && van_y[i] < (actor_y[0] + 16) && van_y[i] > (actor_y[0])) {
+      	delay(20);
+        lives--;
+        van_x[i] = 230;
+      	van_y[i] = (rand() % (208 + 1 - 150)) + 150;
+        hit = 75;
+      }
+    }
     
     //Gas Can Collision detection and place holder for where can goes after collision
     if(gasCan_x[0] > (actor_x[0]) && gasCan_x[0] < (actor_x[0] + 32) && gasCan_y[0] < (actor_y[0] + 16) && gasCan_y[0] > (actor_y[0])) {
@@ -276,21 +315,24 @@ void scroll_background() {
       	fuel = 1000;
       }
     
-    //VAN Collision detection 
+    //Cone Collision detection 
     for (i=0; i<NUM_ENEMIES; i++){
-    if(van_x[i] > (actor_x[0]) && van_x[i] < (actor_x[0] + 32) && van_y[i] < (actor_y[0] + 16) && van_y[i] > (actor_y[0]) && hit ==0) {
+    if(cone_x[i] > (actor_x[0]) && cone_x[i] < (actor_x[0] + 32) && cone_y[i] < (actor_y[0] + 16) && cone_y[i] > (actor_y[0])) {
       	delay(20);
         lives--;
-        van_x[i] = 230;
-      	van_y[i] = (rand() % (208 + 1 - 150)) + 150;
-      hit = 75;
+      	hit = 75;
+        cone_x[i] = 240;
+      	cone_y[i] = (rand() % (208 + 1 - 150)) + 150;
       }
     }
     
-    //Van Spawning pattern
+    //Van and cone Spawning pattern
     for (i=0; i<NUM_ENEMIES; i++){
-    if((van_x[i]) == 250) {
+    if((van_x[i]) >= 254) {
 	van_y[i]= (rand() % (208 + 1 - 150)) + 150;
+      }
+    if((cone_x[i]) >= 254) {
+	cone_y[i]= (rand() % (208 + 1 - 150)) + 150;
       }
     }
     
