@@ -177,7 +177,9 @@ int fuel = 1000;
 int progress,p = 0;
 int time = 1000;
 int hit = 0;
-bool invis =false;
+bool invis = false;
+bool gas_can = false;
+int points=0;
 
 // function to scroll window up and down until end
 void scroll_background() {
@@ -258,7 +260,9 @@ void scroll_background() {
     }
       }
     //Drawing Gas can IDEA: spawn gas can in a random y coordinate within the street range
+    if(gas_can == true){
     for (i=0; i<NUM_ACTORS; i++) {
+      
 
       oam_id = oam_meta_spr(gasCan_x[i], gasCan_y[i], oam_id, gasCan);
       
@@ -270,7 +274,7 @@ void scroll_background() {
       else
       gasCan_x[i] += gasCan_dx[i] - 1;	//Gas can moves same speed as slowed background
             
-    }
+    }}
     
     //Drawing Van enemy
     for (i=0; i<NUM_ENEMIES; i++) {
@@ -293,7 +297,8 @@ void scroll_background() {
       van_x[i] += van_dx[i] + 1;	
       cone_x[i] += cone_dx[i] - 1;
       }	
-            
+      if(van_x[i] >= 254 && gas_can == false)
+        points++;
     }
     
     
@@ -310,9 +315,11 @@ void scroll_background() {
     
     //Gas Can Collision detection and place holder for where can goes after collision
     if(gasCan_x[0] > (actor_x[0]) && gasCan_x[0] < (actor_x[0] + 32) && gasCan_y[0] < (actor_y[0] + 16) && gasCan_y[0] > (actor_y[0])) {
-      	gasCan_x[0] = -10;	//Change these later
-      	gasCan_y[0] = -10;	//Change these later
+      	gas_can = false;
+      //	gasCan_x[0] = -10;	//Change these later
+      //	gasCan_y[0] = -10;	//Change these later
       	fuel = 1000;
+      	points = 0;
       }
     
     //Cone Collision detection 
@@ -362,6 +369,8 @@ void scroll_background() {
     fuel -=1;
     time -=1;
     progress +=1;
+    
+    if(points == 10) gas_can = true;
     
     if (oam_id!=0) oam_hide_rest(oam_id);
     
