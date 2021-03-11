@@ -120,10 +120,10 @@ sbyte van_dy[NUM_ENEMIES];
 
 
 //Cone coordinates and movement variables
-byte cone_x[NUM_ENEMIES];
-byte cone_y[NUM_ENEMIES];
-sbyte cone_dx[NUM_ENEMIES];
-sbyte cone_dy[NUM_ENEMIES];
+byte cone_x;
+byte cone_y;
+sbyte cone_dx = -1;
+sbyte cone_dy;
 
 // link the pattern table into CHR ROM
 //#link "chr_game3.s"
@@ -213,12 +213,13 @@ void scroll_background() {
   van_dx[i] = 0;
   van_dy[i] = 0;
     
-  cone_x[i] = (rand() % (254 + 1 - 200)) + 200;
-  cone_y[i] = (rand() % (210 + 1 - 150)) + 150;
-  cone_dx[i] = 0;
-  cone_dy[i] = 0;
   }
   
+  //Cone placement and speed
+  cone_x = (rand() % (254 + 1 - 200)) + 200;
+  cone_y = (rand() % (210 + 1 - 150)) + 150;
+  cone_dx = 0;
+  cone_dy = 0;
   
   // infinite loop
   while (1) {
@@ -259,22 +260,41 @@ void scroll_background() {
       oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
     }
       }
+    
+    
     //Drawing Gas can IDEA: spawn gas can in a random y coordinate within the street range
     if(gas_can == true){
     for (i=0; i<NUM_ACTORS; i++) {
       
 
-      oam_id = oam_meta_spr(gasCan_x[i], gasCan_y[i], oam_id, gasCan);
+      oam_id = oam_meta_spr(gasCan_x[i], gasCan_y[i], oam_id, gasCan);    
       
-      if (actor_dx[i] == 0){		//Gas can moves same speed as background
+      if (actor_dx[i] == 0)		//Gas can moves same speed as background
       gasCan_x[i] += gasCan_dx[i] - 2;
-      }
-      else if (actor_dx[i] > 0)		//Gas can moves same speed as accelerated background
+
+      else if (actor_dx[i] > 0)
       gasCan_x[i] += gasCan_dx[i] - 4;
       else
-      gasCan_x[i] += gasCan_dx[i] - 1;	//Gas can moves same speed as slowed background
-            
-    }}
+      gasCan_x[i] += gasCan_dx[i] - 1;
+      
+    }
+    }
+    
+    
+    //Drawing Cones
+    for (i=0; i<NUM_ACTORS; i++) 
+    {
+      oam_id = oam_meta_spr(cone_x, cone_y, oam_id, cone );      
+      
+      if (actor_dx[i] == 0)		
+        cone_x += cone_dx - 2;
+
+      else if (actor_dx[i] > 0)
+        cone_x += cone_dx - 4;
+
+      else
+      cone_x += cone_dx -1;     
+    }
     
     //Drawing Van enemy
     for (i=0; i<NUM_ENEMIES; i++) {
@@ -282,21 +302,13 @@ void scroll_background() {
       if (x != 0)
         runseq += 8;
       oam_id = oam_meta_spr(van_x[i], van_y[i], oam_id, VanRunSeq[runseq] );
-      oam_id = oam_meta_spr(cone_x[i], cone_y[i], oam_id, cone );
       
-      if (actor_dx[0] == 0){		
+      if (actor_dx[0] == 0)		
       van_x[i] += van_dx[i] - 1;
-      cone_x[i] += cone_dx[i] - 2;
-      }
-      else if (actor_dx[0] > 0){		
-      van_x[i] += van_dx[i] - 3;
-      cone_x[i] += cone_dx[i] - 4;  
-      }
+      else if (actor_dx[0] > 0)		
+      van_x[i] += van_dx[i] - 3;  
       else
-      {
-      van_x[i] += van_dx[i] + 1;	
-      cone_x[i] += cone_dx[i] - 1;
-      }	
+      van_x[i] += van_dx[i] + 1;	      	
       if(van_x[i] >= 254 && gas_can == false)
         points++;
     }
@@ -323,24 +335,24 @@ void scroll_background() {
       }
     
     //Cone Collision detection 
-    for (i=0; i<NUM_ENEMIES; i++){
-    if(cone_x[i] > (actor_x[0]) && cone_x[i] < (actor_x[0] + 32) && cone_y[i] < (actor_y[0] + 16) && cone_y[i] > (actor_y[0])) {
+    if( (cone_x > (actor_x[0])) && (cone_x < (actor_x[0] + 26)) && (cone_y > actor_y[0]) && (cone_y < actor_y[0] + 6)){
       	delay(20);
         lives--;
       	hit = 75;
-        cone_x[i] = 240;
-      	cone_y[i] = (rand() % (208 + 1 - 150)) + 150;
+        cone_x = 240;
+      	cone_y = (rand() % (208 + 1 - 150)) + 150;
       }
+    else if (cone_x >= 254)
+    {
+      cone_x = 240;
+      cone_y = (rand() % (210 + 1 - 150)) + 150;
     }
+    
     
     //Van and cone Spawning pattern
     for (i=0; i<NUM_ENEMIES; i++){
-    if((van_x[i]) >= 254) {
+    if((van_x[i]) >= 254)
 	van_y[i]= (rand() % (208 + 1 - 150)) + 150;
-      }
-    if((cone_x[i]) >= 254) {
-	cone_y[i]= (rand() % (208 + 1 - 150)) + 150;
-      }
     }
     
     // wait for next frame
