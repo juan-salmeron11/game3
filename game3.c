@@ -58,8 +58,8 @@ DEF_METASPRITE_2x2(playerRRun1, 0xcc, 1);
 DEF_METASPRITE_2x2(playerRRun2, 0xec, 1);
 
 //Meta sprite for Driving animation of Van vehicle
-DEF_METASPRITE_VAN(vanMove1, 0xc4, 1);
-DEF_METASPRITE_VAN(vanMove2, 0xe4, 1);
+DEF_METASPRITE_VAN(vanMove1, 0xc4, 2);
+DEF_METASPRITE_VAN(vanMove2, 0xe4, 2);
 
 //Meta Sprite for Gas Can
 DEF_METASPRITE_GAS(gasCan, 0xd4 , 1);
@@ -86,6 +86,8 @@ const unsigned char* const VanRunSeq[16] = {
 
 
 #define NUM_ACTORS 1
+#define NUM_ENEMIES 3
+
 byte actor_x[NUM_ACTORS];
 byte actor_y[NUM_ACTORS];
 sbyte actor_dx[NUM_ACTORS];
@@ -99,10 +101,10 @@ sbyte gasCan_dy[NUM_ACTORS];
 
 
 //Van vehicle coordinates and movement variables
-byte van_x[NUM_ACTORS];
-byte van_y[NUM_ACTORS];
-sbyte van_dx[NUM_ACTORS];
-sbyte van_dy[NUM_ACTORS];
+byte van_x[NUM_ENEMIES];
+byte van_y[NUM_ENEMIES];
+sbyte van_dx[NUM_ENEMIES];
+sbyte van_dy[NUM_ENEMIES];
 
 
 // link the pattern table into CHR ROM
@@ -139,7 +141,7 @@ const char PALETTE[32] = {
 
   0x1A,0x28,0x16,0x00,	// sprite palette 0
   0x0f,0x20,0x16,0x00,	// sprite palette 1 Motorcycle uses this palette!!!!
-  0x0D,0x28,0x3A,0x00,	// sprite palette 2
+  0x0f,0x20,0x11,0x00,	// sprite palette 2 Van colors
   0x16,0x27,0x2F	// sprite palette 3
 };
 
@@ -182,10 +184,13 @@ void scroll_background() {
   gasCan_dy[0] = 0;
   
   //Van vehicle placement
-  van_x[0] = 100;
-  van_y[0] = 160;
-  van_dx[0] = 0;
-  van_dy[0] = 0;
+  for (i = 0; i < NUM_ENEMIES; i++)
+  {
+  van_x[i] = (rand() % (254 + 1 - 100)) + 200;
+  van_y[i] = (rand() % (208 + 1 - 150)) + 150;	//Vans spawn randomly within street range
+  van_dx[i] = 0;
+  van_dy[i] = 0;
+  }
   
   
   // infinite loop
@@ -246,16 +251,16 @@ void scroll_background() {
     }
     
     //Drawing Van enemy
-    for (i=0; i<NUM_ACTORS; i++) {
+    for (i=0; i<NUM_ENEMIES; i++) {
       byte runseq = x & 7;      
-      if (actor_dx[i] >= 0)
+      if (x != 0)
         runseq += 8;
       oam_id = oam_meta_spr(van_x[i], van_y[i], oam_id, VanRunSeq[runseq] );
 
-      if (actor_dx[i] == 0){		
+      if (actor_dx[0] == 0){		
       van_x[i] += van_dx[i] - 1;
       }
-      else if (actor_dx[i] > 0)		
+      else if (actor_dx[0] > 0)		
       van_x[i] += van_dx[i] - 3;
       else
       van_x[i] += van_dx[i] + 2;	
@@ -271,12 +276,14 @@ void scroll_background() {
       }
     
     //VAN Collision detection 
-    if(van_x[0] > (actor_x[0]) && van_x[0] < (actor_x[0] + 32) && van_y[0] < (actor_y[0] + 16) && van_y[0] > (actor_y[0])) {
+    for (i=0; i<NUM_ENEMIES; i++){
+    if(van_x[i] > (actor_x[0]) && van_x[i] < (actor_x[0] + 32) && van_y[i] < (actor_y[0] + 16) && van_y[i] > (actor_y[0])) {
       	delay(20);
         lives--;
         actor_x[0] = 10;	//Change these later
       	actor_y[0] = 190;	//Change these later
       }
+    }
     
     // wait for next frame
     ppu_wait_nmi();
