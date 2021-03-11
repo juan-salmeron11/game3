@@ -278,12 +278,12 @@ void scroll_background() {
     
     //VAN Collision detection 
     for (i=0; i<NUM_ENEMIES; i++){
-    if(van_x[i] > (actor_x[0]) && van_x[i] < (actor_x[0] + 32) && van_y[i] < (actor_y[0] + 16) && van_y[i] > (actor_y[0])) {
+    if(van_x[i] > (actor_x[0]) && van_x[i] < (actor_x[0] + 32) && van_y[i] < (actor_y[0] + 16) && van_y[i] > (actor_y[0]) && hit ==0) {
       	delay(20);
         lives--;
         van_x[i] = 230;
       	van_y[i] = (rand() % (208 + 1 - 150)) + 150;
-      hit = 50;
+      hit = 75;
       }
     }
     
