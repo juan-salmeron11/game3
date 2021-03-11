@@ -137,7 +137,7 @@ const char PALETTE[32] = {
   0x00,0x2A,0x20,0x00,	// background palette 2
   0x06,0x2A,0x26,0x00,	// background palette 3
 
-  0x07,0x10,0x16,0x00,	// sprite palette 0
+  0x1A,0x28,0x16,0x00,	// sprite palette 0
   0x0f,0x20,0x16,0x00,	// sprite palette 1 Motorcycle uses this palette!!!!
   0x0D,0x28,0x3A,0x00,	// sprite palette 2
   0x16,0x27,0x2F	// sprite palette 3
@@ -153,6 +153,9 @@ void setup_graphics() {
   ppu_on_all();
 }
 
+int fuel = 1000;
+int progress = 0;
+int time = 1000;
 
 // function to scroll window up and down until end
 void scroll_background() {
@@ -264,6 +267,7 @@ void scroll_background() {
     if(gasCan_x[0] > (actor_x[0]) && gasCan_x[0] < (actor_x[0] + 32) && gasCan_y[0] < (actor_y[0] + 16) && gasCan_y[0] > (actor_y[0])) {
       	gasCan_x[0] = -10;	//Change these later
       	gasCan_y[0] = -10;	//Change these later
+      	fuel = 1000;
       }
     
     //VAN Collision detection 
@@ -278,11 +282,27 @@ void scroll_background() {
     ppu_wait_nmi();
     // update y variable
     //x += dx;
+    
+    for(i=0;i<fuel/100;i++){
+      int s = 2;
+        if (fuel < 600 & fuel > 300) s = 1;
+      else if (fuel <= 300) s = 3;
+    oam_id = oam_spr(10+(i*8), 10, s, 0, oam_id);
+      
+    }
+    oam_id = oam_spr(232, 10, 48+(time/100%10), 2, oam_id);
+    oam_id = oam_spr(240, 10, 48+(time/10%10), 2, oam_id);
+    
     x +=2;
     scroll(x, y);
+    fuel -=1;
+    time -=1;
+    progress +=1;
+    
+    if (oam_id!=0) oam_hide_rest(oam_id);
     
     //End game when lives run out PLACE HOLDER
-    if (lives == 0)
+    if (fuel == 0)
       break;
   }
 }
@@ -311,7 +331,7 @@ void main(void)
   // set music callback function for NMI
   nmi_set_callback(famitone_update);
   // play music
-  music_play(0); //Uncomment this to play Music
+  //music_play(0); //Uncomment this to play Music
   
   setup_graphics();
   show_title_screen(city_back1_pal, city_back1_rle,city_back2_rle);
