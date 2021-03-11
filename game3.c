@@ -1,5 +1,9 @@
 #include "neslib.h"
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <nes.h>
+
 #define NES_MIRRORING 1
 //Import Music
 //#link "famitone2.s"
@@ -27,9 +31,38 @@ const unsigned char name[]={\
         24,      8,      (code)+7,   pal, \
         128};
 
+// define a 2x4 metasprite for VAN enemy
+#define DEF_METASPRITE_VAN(name,code,pal)\
+const unsigned char name[]={\
+        0,      0,      (code)+0,   pal, \
+        0,      8,      (code)+1,   pal, \
+        8,      0,      (code)+2,   pal, \
+        8,      8,      (code)+3,   pal, \
+        16,      0,      (code)+4,   pal, \
+        16,      8,      (code)+5,   pal, \
+        24,      0,      (code)+6,   pal, \
+        24,      8,      (code)+7,   pal, \
+        128};
+
+//Meta Sprite for Gas Can
+#define DEF_METASPRITE_GAS(name, code, pal)\
+const unsigned char name[]={\
+        0,      0,      (code)+0,   pal, \
+        0,      8,      (code)+1,   pal, \
+        8,      0,      (code)+2,   pal, \
+        8,      8,      (code)+3,   pal, \
+        128};
+
 //Meta Sprites for Driving animation of the Motorcycle
 DEF_METASPRITE_2x2(playerRRun1, 0xcc, 1);
 DEF_METASPRITE_2x2(playerRRun2, 0xec, 1);
+
+//Meta sprite for Driving animation of Van vehicle
+DEF_METASPRITE_VAN(vanMove1, 0xc4, 1);
+DEF_METASPRITE_VAN(vanMove2, 0xe4, 1);
+
+//Meta Sprite for Gas Can
+DEF_METASPRITE_GAS(gasCan, 0xd4 , 1);
 
 //Motorcycle Movement Sequence
 const unsigned char* const playerRunSeq[16] = {
@@ -41,11 +74,36 @@ const unsigned char* const playerRunSeq[16] = {
   playerRRun1, playerRRun2,
 };
 
+//VAN Movement Sequence
+const unsigned char* const VanRunSeq[16] = {
+  vanMove1, vanMove2, vanMove1, 
+  vanMove1, vanMove2, vanMove1, 
+  vanMove1, vanMove2,
+  vanMove1, vanMove2, vanMove1, 
+  vanMove1, vanMove2, vanMove1, 
+  vanMove1, vanMove2,
+};
+
+
 #define NUM_ACTORS 1
 byte actor_x[NUM_ACTORS];
 byte actor_y[NUM_ACTORS];
 sbyte actor_dx[NUM_ACTORS];
 sbyte actor_dy[NUM_ACTORS];
+
+//Gas can coordinates and movement variables
+byte gasCan_x[NUM_ACTORS];
+byte gasCan_y[NUM_ACTORS];
+sbyte gasCan_dx[NUM_ACTORS];
+sbyte gasCan_dy[NUM_ACTORS];
+
+
+//Van vehicle coordinates and movement variables
+byte van_x[NUM_ACTORS];
+byte van_y[NUM_ACTORS];
+sbyte van_dx[NUM_ACTORS];
+sbyte van_dy[NUM_ACTORS];
+
 
 // link the pattern table into CHR ROM
 //#link "chr_game3.s"
@@ -101,8 +159,9 @@ void scroll_background() {
   int x = 0;   // x scroll position
   int y = 0;   // y scroll position
   int dx = 0;  // y scroll direction
+  int lives = 3;
   
-         char i;	// actor index
+  char i;	// actor index
   char oam_id;	// sprite ID
   char pad;	// controller flags
   
@@ -111,6 +170,20 @@ void scroll_background() {
   actor_y[0] = 191;
   actor_dx[0] = 0;
   actor_dy[0] = 0; 
+  
+    
+  //Placeholder for GasCan
+  gasCan_x[0] = 0;	//Appear from rightmost part of screen
+  gasCan_y[0] = 180;
+  gasCan_dx[0] = 0;
+  gasCan_dy[0] = 0;
+  
+  //Van vehicle placement
+  van_x[0] = 100;
+  van_y[0] = 160;
+  van_dx[0] = 0;
+  van_dy[0] = 0;
+  
   
   // infinite loop
   while (1) {
@@ -154,12 +227,63 @@ void scroll_background() {
       actor_x[i] += actor_dx[i];
     }
     
+    //Drawing Gas can IDEA: spawn gas can in a random y coordinate within the street range
+    for (i=0; i<NUM_ACTORS; i++) {
+
+      oam_id = oam_meta_spr(gasCan_x[i], gasCan_y[i], oam_id, gasCan);
+      
+      if (actor_dx[i] == 0){		//Gas can moves same speed as background
+      gasCan_x[i] += gasCan_dx[i] - 2;
+      }
+      else if (actor_dx[i] > 0)		//Gas can moves same speed as accelerated background
+      gasCan_x[i] += gasCan_dx[i] - 4;
+      else
+      gasCan_x[i] += gasCan_dx[i] - 1;	//Gas can moves same speed as slowed background
+            
+    }
+    
+    //Drawing Van enemy
+    for (i=0; i<NUM_ACTORS; i++) {
+      byte runseq = x & 7;      
+      if (actor_dx[i] >= 0)
+        runseq += 8;
+      oam_id = oam_meta_spr(van_x[i], van_y[i], oam_id, VanRunSeq[runseq] );
+
+      if (actor_dx[i] == 0){		
+      van_x[i] += van_dx[i] - 1;
+      }
+      else if (actor_dx[i] > 0)		
+      van_x[i] += van_dx[i] - 3;
+      else
+      van_x[i] += van_dx[i] + 2;	
+            
+    }
+    
+    
+    //Gas Can Collision detection and place holder for where can goes after collision
+    if(gasCan_x[0] > (actor_x[0]) && gasCan_x[0] < (actor_x[0] + 32) && gasCan_y[0] < (actor_y[0] + 16) && gasCan_y[0] > (actor_y[0])) {
+      	gasCan_x[0] = -10;	//Change these later
+      	gasCan_y[0] = -10;	//Change these later
+      }
+    
+    //VAN Collision detection 
+    if(van_x[0] > (actor_x[0]) && van_x[0] < (actor_x[0] + 32) && van_y[0] < (actor_y[0] + 16) && van_y[0] > (actor_y[0])) {
+      	delay(20);
+        lives--;
+        actor_x[0] = 10;	//Change these later
+      	actor_y[0] = 190;	//Change these later
+      }
+    
     // wait for next frame
     ppu_wait_nmi();
     // update y variable
     //x += dx;
     x +=2;
     scroll(x, y);
+    
+    //End game when lives run out PLACE HOLDER
+    if (lives == 0)
+      break;
   }
 }
 
@@ -181,14 +305,13 @@ void show_title_screen(const byte* pal, const byte* rle,const byte* rle2) {
   
 //Function for music  
 void fastcall famitone_update(void);
-
 void main(void)
 {
   famitone_init(danger_streets_music_data);
   // set music callback function for NMI
   nmi_set_callback(famitone_update);
   // play music
-  //music_play(0); //Uncomment this to play Music
+  music_play(0); //Uncomment this to play Music
   
   setup_graphics();
   show_title_screen(city_back1_pal, city_back1_rle,city_back2_rle);
