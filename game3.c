@@ -180,6 +180,7 @@ int hit = 0;
 bool invis = false;
 bool gas_can = false;
 int points=0;
+bool aa = false;
 
 // function to scroll window up and down until end
 void scroll_background() {
@@ -316,6 +317,7 @@ void scroll_background() {
     
     
     //VAN Collision detection 
+    if(aa == false){
     for (i=0; i<NUM_ENEMIES; i++){
     if(van_x[i] > (actor_x[0]) && van_x[i] < (actor_x[0] + 32) && van_y[i] < (actor_y[0] + 16) && van_y[i] > (actor_y[0])) {
       	delay(20);
@@ -323,8 +325,10 @@ void scroll_background() {
         van_x[i] = 230;
       	van_y[i] = (rand() % (208 + 1 - 150)) + 150;
         hit = 75;
+      aa = true;
+      fuel -= 50;
       }
-    }
+    }}
     
     //Gas Can Collision detection and place holder for where can goes after collision
     if(gasCan_x[0] > (actor_x[0]) && gasCan_x[0] < (actor_x[0] + 32) && gasCan_y[0] < (actor_y[0] + 16) && gasCan_y[0] > (actor_y[0])) {
@@ -342,6 +346,7 @@ void scroll_background() {
       	hit = 75;
         cone_x = 240;
       	cone_y = (rand() % (208 + 1 - 150)) + 150;
+    	fuel -= 50;
       }
     else if (cone_x >= 254)
     {
@@ -394,8 +399,11 @@ void scroll_background() {
         else invis = false;
     }
     
-    if(hit == 0)invis = false;
-
+    if(hit == 0){
+      invis = false;
+      aa = false;
+    }
+      
     if (oam_id!=0) oam_hide_rest(oam_id);
     
     //End game when lives run out PLACE HOLDER
@@ -428,7 +436,7 @@ void main(void)
   // set music callback function for NMI
   nmi_set_callback(famitone_update);
   // play music
-  music_play(0); //Uncomment this to play Music
+  //music_play(0); //Uncomment this to play Music
   
   setup_graphics();
   show_title_screen(city_back1_pal, city_back1_rle,city_back2_rle);
