@@ -331,6 +331,7 @@ void scroll_background() {
     }}
     
     //Gas Can Collision detection and place holder for where can goes after collision
+    if(gas_can == true){
     if(gasCan_x[0] > (actor_x[0]) && gasCan_x[0] < (actor_x[0] + 32) && gasCan_y[0] < (actor_y[0] + 16) && gasCan_y[0] > (actor_y[0])) {
       	gas_can = false;
       //	gasCan_x[0] = -10;	//Change these later
@@ -338,7 +339,7 @@ void scroll_background() {
       	fuel = 1000;
       	points = 0;
       }
-    
+    }
     //Cone Collision detection 
     if( (cone_x > (actor_x[0])) && (cone_x < (actor_x[0] + 26)) && (cone_y > actor_y[0]) && (cone_y < actor_y[0] + 6)){
       	delay(20);
