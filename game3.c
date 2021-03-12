@@ -258,6 +258,7 @@ void scroll_background() {
       if (actor_dx[i] >= 0)
         runseq += 8;
       oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
+         actor_x[0] += actor_dx[0];
     }
       }
     
