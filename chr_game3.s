@@ -25,10 +25,10 @@
 .byte $00,$00,$00,$F0,$F0,$F0,$F0,$F0
 .byte $F0,$F0,$F0,$F0,$F0,$F0,$F0,$F0
 .byte $F0,$F0,$F0,$F0,$F0,$F0,$F0,$F0
+.byte $F0,$F0,$F0,$F0,$F0,$F0,$F0,$F0
 .byte $00,$00,$00,$00,$00,$00,$00,$00
-.byte $33,$CC,$33,$CC,$33,$CC,$33,$CC
-.byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-.byte $CC,$33,$CC,$33,$CC,$33,$CC,$33
+.byte $0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F
+.byte $00,$00,$00,$00,$00,$00,$00,$00
 .byte $CC,$33,$CC,$33,$CC,$33,$CC,$33
 .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 .byte $CC,$33,$CC,$33,$CC,$33,$CC,$33
