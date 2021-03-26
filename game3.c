@@ -14,7 +14,6 @@ extern char danger_streets_music_data[];
 //Backgrounds/ Name tables
 extern const byte city_back1_pal[16];
 extern const byte city_back1_rle[];
-extern const byte city_back2_pal[16];
 extern const byte city_back2_rle[];
 extern const byte city_game_over_rle[];
 extern const byte city_title_rle[];
@@ -131,7 +130,7 @@ sbyte cone_dy;
 //#link "chr_game3.s"
 //#link "city_back1.s"
 //#link "city_back2.s"
-//#link "city_game_over.s
+//#link "city_game_over.s"
 //#link "city_title.s"
 
 
@@ -178,7 +177,7 @@ void setup_graphics() {
   ppu_on_all();
 }
 
-int fuel = 1000;
+int fuel = 100;
 int progress,p = 0;
 int time = 1000;
 int hit = 0;
@@ -188,6 +187,30 @@ int points=0;
 bool aa = false;
 
 // function to scroll window up and down until end
+void scroll_background(void);
+void show_screen(const byte* pal, const byte* rle,const byte* rle2);
+void show_title(const byte* pal, const byte* rle);
+void show_game_over(const byte* pal, const byte* rle);
+//Function for music  
+void fastcall famitone_update(void);
+
+
+void main()
+{
+  famitone_init(danger_streets_music_data);
+  // set music callback function for NMI
+  nmi_set_callback(famitone_update);
+  // play music
+  //music_play(0); //Uncomment this to play Music
+  
+  setup_graphics();
+  show_title(city_back1_pal, city_title_rle);
+  show_screen(city_back1_pal, city_back1_rle,city_back2_rle);
+  scroll_background();
+
+}
+
+
 void scroll_background() {
   int x = 0;   // x scroll position
   int y = 0;   // y scroll position
@@ -414,8 +437,8 @@ void scroll_background() {
     
     //End game when lives run out PLACE HOLDER
     if (fuel == 0)
-      break;
-  }
+      show_game_over(city_back1_pal, city_game_over_rle);
+    }
 }
 
 
@@ -433,6 +456,7 @@ void show_screen(const byte* pal, const byte* rle,const byte* rle2) {
   // enable rendering
   ppu_on_all();
 }
+
 
 void show_title(const byte* pal, const byte* rle){
   
@@ -455,62 +479,102 @@ void show_title(const byte* pal, const byte* rle){
   vram_unrle(rle);
   // enable rendering
   ppu_on_all();
-  while(actor_x[0] < 115){
-    oam_id =0;
-        
-   for (i=0; i<NUM_ACTORS; i++) {
-	byte runseq = x & 7;
-      if (actor_dx[i] >= 0)
-        runseq += 8;
-      oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
-         actor_x[0] += actor_dx[0];
-    }
-    ppu_wait_frame();
-  }
 
-           for (i=0; i<1; i++) {
-      // poll controller i (0-1)
-      pad = pad_poll(i);
-      
-      if (pad&PAD_START && actor_x[i]>10) {
-     
-      }
-
-    } 
     
-      
-     
+
+
+while(1){
+     pad = pad_trigger(i);
+   if(pad & PAD_START){
+   break;
+   }
 }
 
+    while(actor_x[0] < 235){
+      oam_id =0;
+      for (i=0; i<NUM_ACTORS; i++) {
+        byte runseq = x & 7;
+      if (actor_dx[i] >= 0)
+        runseq += 8;
+        oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
+        actor_x[0] += actor_dx[0];
+    }
+    ppu_wait_frame();
+    }
+
+
+}
+
+
+
+
 void show_game_over(const byte* pal, const byte* rle){
+   int x = 0;   // x scroll position
+  char i;	// actor index
+  char oam_id;	// sprite ID
+  char pad;	// controller flags
+  
+  
+  fuel = 100;
+  progress,p = 0;
+  time = 1000;
+  hit = 0;
+  invis = false;
+  gas_can = false;
+  points=0;
+  aa = false;
+  
+  
+  
+  //Place the player in the left fourth of the screen  
+  actor_x[0] = 125;
+  actor_y[0] = 160;
+  actor_dx[0] = 2;
+  actor_dy[0] = 0; 
+  
+   setup_graphics();
   ppu_off();
   // set palette, virtual bright to 0 (total black)
   pal_bg(pal);
-  
+  scroll(0, 0);
   // unpack nametable into the VRAM
   vram_adr(0x2000);
   vram_unrle(rle);
   // enable rendering
   ppu_on_all();
-}
-  
-//Function for music  
-void fastcall famitone_update(void);
-void main(void)
-{
-  famitone_init(danger_streets_music_data);
-  // set music callback function for NMI
-  nmi_set_callback(famitone_update);
-  // play music
-  //music_play(0); //Uncomment this to play Music
-  
-  setup_graphics();
-  
-  show_title(city_back1_pal, city_title_rle);
-  while(1){
-       }
-  show_screen(city_back1_pal, city_back1_rle,city_back2_rle);
-  scroll_background();
-  //show_game_over(city_back1_pal, city_game_over_rle);
 
+  while(1){      
+    
+    
+   pad = pad_trigger(0);
+   if(pad & PAD_RIGHT){
+   actor_x[0]=125;
+   }
+   if(pad & PAD_LEFT){
+   actor_x[0]=45;
+   }
+   if(pad & PAD_START){
+     if(actor_x[0] == 45){
+       show_screen(city_back1_pal, city_back1_rle,city_back2_rle);
+       scroll_background();     
+   }
+   
+     else
+       main();    
+   
+     
+   }
+    
+    oam_id =0;
+      for (i=0; i<NUM_ACTORS; i++) {
+        byte runseq = x & 7;
+      if (actor_dx[i] >= 0)
+        runseq += 8;
+        oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
+     
+    }
+          
+  }
+
+  
 }

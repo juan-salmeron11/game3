@@ -1,15 +1,12 @@
-.export _city_game_over_pal
+
 .export _city_game_over_rle
 
 
-;;{pal:"nes",layout:"nes"};;
-_city_game_over_pal:
- .byte $1C,$10,$00,$30,$1C,$01,$21,$31
- .byte $1C,$16,$30,$06,$1C,$09,$19,$29
- 
+
 ;;
 ;;{w:32,h:30,bpp:8,comp:"rletag",map:"nesnt"};;
 _city_game_over_rle:
+
 
 .byte $01,$00,$01,$67,$02,$01,$02,$00
 .byte $00,$02,$02,$00,$00,$02,$00,$01
