@@ -183,7 +183,7 @@ void setup_graphics() {
 }
 
 int fuel = 1000;
-int progress,p = 50;
+int progress,p = 0;
 int time = 1000;
 int hit = 0;
 bool invis = false;
