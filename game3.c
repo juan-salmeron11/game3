@@ -20,6 +20,7 @@ extern const byte city_back1_rle[];
 extern const byte city_back2_rle[];
 extern const byte city_game_over_rle[];
 extern const byte city_title_rle[];
+extern const byte city_victory_rle[];
 
 
 // define a 2x4 metasprite for the motorcycle
@@ -135,6 +136,7 @@ sbyte cone_dy;
 //#link "city_back2.s"
 //#link "city_game_over.s"
 //#link "city_title.s"
+//#link "city_victory.s"
 
 
 void fade_in() {
@@ -181,7 +183,7 @@ void setup_graphics() {
 }
 
 int fuel = 1000;
-int progress,p = 0;
+int progress,p = 50;
 int time = 1000;
 int hit = 0;
 bool invis = false;
@@ -194,6 +196,7 @@ void scroll_background(void);
 void show_screen(const byte* pal, const byte* rle,const byte* rle2);
 void show_title(const byte* pal, const byte* rle);
 void show_game_over(const byte* pal, const byte* rle);
+void show_victory(const byte* pal, const byte* rle);
 //Function for music  
 void fastcall famitone_update(void);
 
@@ -408,12 +411,8 @@ void scroll_background() {
     oam_id = oam_spr(10+(i*8), 10, s, 0, oam_id);
       
     }
-    //temp timer
-    oam_id = oam_spr(232, 10, 48+(time/100%10), 3, oam_id);
-    oam_id = oam_spr(240, 10, 48+(time/10%10), 3, oam_id);
-    
     if(progress %300 ==0) p+=5;
-    if(p == 60)break;
+    if(p == 60)show_victory(city_back1_pal, city_victory_rle);
     oam_id = oam_spr(100+ p, 10, 26, 2, oam_id);// change this sprite to an icon
     oam_id = oam_spr(160, 10, 25, 1, oam_id);
     
@@ -591,4 +590,20 @@ void show_game_over(const byte* pal, const byte* rle){
   }
 
   
+}
+
+
+void show_victory(const byte* pal, const byte* rle){
+  setup_graphics();
+  ppu_off();
+  // set palette, virtual bright to 0 (total black)
+  pal_bg(pal);
+  scroll(0, 0);
+  // unpack nametable into the VRAM
+  vram_adr(0x2000);
+  vram_unrle(rle);
+  // enable rendering
+  ppu_on_all();
+
+  while(1){}
 }
