@@ -8,8 +8,11 @@
 //Import Music
 //#link "famitone2.s"
 //#link "music_dangerstreets.s"
+//#link "music_aftertherain.s"
+//#link "demosounds.s"
 extern char danger_streets_music_data[];
-
+extern char after_the_rain_music_data[];
+extern char demo_sounds[];
 
 //Backgrounds/ Name tables
 extern const byte city_back1_pal[16];
@@ -177,7 +180,7 @@ void setup_graphics() {
   ppu_on_all();
 }
 
-int fuel = 100;
+int fuel = 1000;
 int progress,p = 0;
 int time = 1000;
 int hit = 0;
@@ -200,8 +203,8 @@ void main()
   famitone_init(danger_streets_music_data);
   // set music callback function for NMI
   nmi_set_callback(famitone_update);
-  // play music
-  //music_play(0); //Uncomment this to play Music
+  sfx_init(demo_sounds); 
+  
   
   setup_graphics();
   show_title(city_back1_pal, city_title_rle);
@@ -348,6 +351,7 @@ void scroll_background() {
     if(aa == false){
     for (i=0; i<NUM_ENEMIES; i++){
     if(van_x[i] > (actor_x[0]) && van_x[i] < (actor_x[0] + 32) && van_y[i] < (actor_y[0] + 16) && van_y[i] > (actor_y[0])) {
+      	sfx_play(1,1);	
       	delay(20);
         lives--;
         van_x[i] = 230;
@@ -366,10 +370,12 @@ void scroll_background() {
       //	gasCan_y[0] = -10;	//Change these later
       	fuel = 1000;
       	points = 0;
+      	sfx_play(0,2);
       }
     }
     //Cone Collision detection 
     if( (cone_x > (actor_x[0])) && (cone_x < (actor_x[0] + 26)) && (cone_y > actor_y[0]) && (cone_y < actor_y[0] + 6)){
+      	sfx_play(1,1);
       	delay(20);
         lives--;
       	hit = 75;
@@ -451,7 +457,7 @@ void show_screen(const byte* pal, const byte* rle,const byte* rle2) {
   // unpack nametable into the VRAM
   vram_adr(0x2000);
   vram_unrle(rle);
- vram_adr(0x2400);
+  vram_adr(0x2400);
   vram_unrle(rle2);
   // enable rendering
   ppu_on_all();
@@ -484,8 +490,10 @@ void show_title(const byte* pal, const byte* rle){
 
 
 while(1){
+  
      pad = pad_trigger(i);
    if(pad & PAD_START){
+     sfx_play(0,1);
    break;
    }
 }
@@ -499,23 +507,25 @@ while(1){
         oam_id = oam_meta_spr(actor_x[i], actor_y[i], oam_id, playerRunSeq[runseq]);
         actor_x[0] += actor_dx[0];
     }
-    ppu_wait_frame();
+    	ppu_wait_frame();
+      	
     }
 
-
+music_play(0);
 }
 
 
 
 
 void show_game_over(const byte* pal, const byte* rle){
-   int x = 0;   // x scroll position
+  int x = 0;   // x scroll position
   char i;	// actor index
   char oam_id;	// sprite ID
   char pad;	// controller flags
   
+  music_stop();
   
-  fuel = 100;
+  fuel = 1000;
   progress,p = 0;
   time = 1000;
   hit = 0;
@@ -532,7 +542,7 @@ void show_game_over(const byte* pal, const byte* rle){
   actor_dx[0] = 2;
   actor_dy[0] = 0; 
   
-   setup_graphics();
+  setup_graphics();
   ppu_off();
   // set palette, virtual bright to 0 (total black)
   pal_bg(pal);
@@ -543,25 +553,29 @@ void show_game_over(const byte* pal, const byte* rle){
   // enable rendering
   ppu_on_all();
 
-  while(1){      
-    
-    
+  while(1){          
    pad = pad_trigger(0);
    if(pad & PAD_RIGHT){
-   actor_x[0]=125;
+     	sfx_play(2,1);
+   	actor_x[0]=125;
    }
    if(pad & PAD_LEFT){
-   actor_x[0]=45;
+   	actor_x[0]=45;
+     	sfx_play(2,1);
    }
    if(pad & PAD_START){
      if(actor_x[0] == 45){
+       sfx_play(0,0);
+       music_play(0);
        show_screen(city_back1_pal, city_back1_rle,city_back2_rle);
        scroll_background();     
    }
    
      else
-       main();    
-   
+     {
+       	main();    
+     	sfx_play(0,0);
+     }
      
    }
     
